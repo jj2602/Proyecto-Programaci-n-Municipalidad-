@@ -1,0 +1,6 @@
+admin:admin
+Vini:Vini
+Inspector500:I500
+hola:hola
+chau:chau
+Juan Cruz:JuanCruz1212!
