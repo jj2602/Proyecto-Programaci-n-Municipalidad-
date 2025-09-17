@@ -18,28 +18,28 @@ class Login:
         self.canvas.pack(fill="both", expand=True)
 
         # Dibujar fondo dividido
-        self.canvas.create_rectangle(0, 0, 500, 600, fill="#d67a4c", outline="#e7842e")
-        self.canvas.create_rectangle(500, 0, 1000, 600, fill="#FADECA", outline="#FADECA")
+        self.canvas.create_rectangle(0, 0, 500, 600, fill="#0667c5", outline="#0667c5")
+        self.canvas.create_rectangle(500, 0, 1000, 600, fill="#e6f1fd", outline="#e6f1fd")
 
         # Logo en la izquierda
-        self.logo_img = Image.open("Muni.png").resize((200, 200))
+        self.logo_img = Image.open("Muni.png").resize((410, 151))
         self.logo_photo = ImageTk.PhotoImage(self.logo_img)
         self.canvas.create_image(250, 300, image=self.logo_photo)
 
         # Frame de login derecha
-        self.login_frame = Frame(self.canvas, bg="#FADECA")
+        self.login_frame = Frame(self.canvas, bg="#e6f1fd")
         self.login_frame.place(x=600, y=150)
 
         # Título
-        Label(self.login_frame, text="LOGIN", font=("Calisto MT", 36, "bold"), bg="#FADECA").pack(pady=(0, 30))
+        Label(self.login_frame, text="LOGIN", font=("Calisto MT", 36, "bold"), bg="#e6f1fd").pack(pady=(0, 30))
 
         # Usuario
-        Label(self.login_frame, text="Usuario", font=("Arial", 18), bg="#FADECA").pack(anchor="w")
+        Label(self.login_frame, text="Usuario", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
         self.entry_usuario = Entry(self.login_frame, font=("Arial", 18), width=25)
         self.entry_usuario.pack(pady=(0, 20))
 
         # Contraseña
-        Label(self.login_frame, text="Contrasena", font=("Arial", 18), bg="#FADECA").pack(anchor="w")
+        Label(self.login_frame, text="Contrasena", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
         self.entry_contrasena = Entry(self.login_frame, font=("Arial", 18), width=25, show="*")
         self.entry_contrasena.pack(pady=(0, 30))
 
@@ -109,7 +109,7 @@ class Registro:
         self.entry_repetir_contrasena.pack(pady=(0, 20))
 
         Button(self.registro_ventana, text="Registrar", font=("Arial", 14, "bold"),
-               bg="#fff4dc", fg="black", width=15, command=self.registrar_usuario).pack()
+               bg="White", fg="black", width=15, command=self.registrar_usuario).pack()
 
     def validar_contrasena(self, nueva_contrasena):
         tiene_mayus = any(c.isupper() for c in nueva_contrasena)
