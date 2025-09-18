@@ -1,11 +1,10 @@
-from tkinter import Tk, Label, Button, Entry, Frame, Canvas, messagebox, Toplevel
+from tkinter import Tk, Label, Button, Entry, Frame, Canvas, messagebox
 from PIL import Image, ImageTk
 import os
 
-# Importamos el panel de admin desde otro archivo
-from admin_panel import AdminPanel
+from admin_panel import AdminPanel   # Panel de admin
+from registro import Registro        # Registro separado
 
-# --- Clase de Login ---
 class Login:
     def __init__(self):
         self.ventana = Tk()
@@ -55,16 +54,25 @@ class Login:
         self.archivo_usuarios = "usuarios.txt"
         if not os.path.exists(self.archivo_usuarios):
             with open(self.archivo_usuarios, "w") as f:
-                f.write("admin:admin\n")  # Usuario por defecto
+                f.write("admin:admin:1\n")  # Usuario por defecto
 
     def login(self):
         usuario = self.entry_usuario.get()
         contrasena = self.entry_contrasena.get()
-        if self.validar_usuario(usuario, contrasena):
+        tipo = self.validar_usuario(usuario, contrasena)
+
+        if tipo:
             messagebox.showinfo("Login", f"¡Bienvenido {usuario}!")
             self.ventana.destroy()  # Cierra ventana de login
-            if usuario == "admin" and contrasena == "admin":
-                AdminPanel()  # Abre panel de admin (otro archivo)
+
+            if tipo == "1":  # Admin
+                AdminPanel()
+            elif tipo == "2":
+                messagebox.showinfo("Login", "Accediste como Inspector.")
+                    #Panel Inspector
+            elif tipo == "3":
+                messagebox.showinfo("Login", "Accediste como Usuario común.")
+                  #Panel Usuario
         else:
             messagebox.showerror("Login", "Usuario o contrasena incorrectos.")
 
@@ -74,82 +82,19 @@ class Login:
                 linea = linea.strip()
                 if not linea:
                     continue
-                u, c = linea.split(":", 1)
+                u, c, t = linea.split(":", 2)
                 if u == usuario and c == contrasena:
-                    return True
-        return False
+                    return t
+        return None
 
-    # --- Nueva ventana de registro ---
     def abrir_registro(self):
-        Registro(self.archivo_usuarios)
+        # Desde el login, solo se registran como tipo 3
+        Registro(self.archivo_usuarios, solo_usuario_comun=True)
 
     def run(self):
         self.ventana.mainloop()
 
 
-# --- Clase Registro ---
-class Registro:
-    def __init__(self, archivo_usuarios):
-        self.archivo_usuarios = archivo_usuarios
-        self.registro_ventana = Toplevel()
-        self.registro_ventana.title("Registro de Usuario")
-        self.registro_ventana.geometry("400x300")
-        self.registro_ventana.resizable(False, False)
-
-        Label(self.registro_ventana, text="Nuevo Usuario:", font=("Arial", 14)).pack(pady=(20, 5))
-        self.entry_nuevo_usuario = Entry(self.registro_ventana, font=("Arial", 14))
-        self.entry_nuevo_usuario.pack(pady=(0, 20))
-
-        Label(self.registro_ventana, text="Nueva Contrasena:", font=("Arial", 14)).pack(pady=(0, 5))
-        self.entry_nueva_contrasena = Entry(self.registro_ventana, font=("Arial", 14), show="*")
-        self.entry_nueva_contrasena.pack(pady=(0, 20))
-        
-        Label(self.registro_ventana, text="Repetir Contrasena:", font=("Arial", 14)).pack(pady=(0, 5))
-        self.entry_repetir_contrasena = Entry(self.registro_ventana, font=("Arial", 14), show="*")
-        self.entry_repetir_contrasena.pack(pady=(0, 20))
-
-        Button(self.registro_ventana, text="Registrar", font=("Arial", 14, "bold"),
-               bg="White", fg="black", width=15, command=self.registrar_usuario).pack()
-
-    def validar_contrasena(self, nueva_contrasena):
-        tiene_mayus = any(c.isupper() for c in nueva_contrasena)
-        tiene_minus = any(c.islower() for c in nueva_contrasena)
-        tiene_especial = any(not c.isalnum() for c in nueva_contrasena)
-        longitud_ok = len(nueva_contrasena) >= 10
-        return tiene_mayus and tiene_minus and tiene_especial and longitud_ok
-
-    
-    def registrar_usuario(self):
-        nuevo_usuario = self.entry_nuevo_usuario.get()
-        nueva_contrasena = self.entry_nueva_contrasena.get()
-        repetir_contrasena = self.entry_repetir_contrasena.get()
-        if not nuevo_usuario or not nueva_contrasena or not repetir_contrasena:
-            messagebox.showwarning("Registro", "Debe completar todos los campos.")
-            return
-        if nueva_contrasena != repetir_contrasena:
-            messagebox.showwarning("Registro", "Las contrasenas no coinciden.")
-            return
-        if not self.validar_contrasena(nueva_contrasena):
-            messagebox.showwarning("Registro", "La contrasena no cumple con las características.")
-            return
-
-        # Validar si ya existe
-        with open(self.archivo_usuarios, "r") as f:
-            for linea in f:
-                u, _ = linea.strip().split(":", 1)
-                if u == nuevo_usuario:
-                    messagebox.showerror("Registro", "El usuario ya existe.")
-                    return
-
-        # Guardar usuario
-        with open(self.archivo_usuarios, "a") as f:
-            f.write(f"{nuevo_usuario}:{nueva_contrasena}\n")
-
-        messagebox.showinfo("Registro", "Usuario registrado con éxito.")
-        self.registro_ventana.destroy()
-
-
-# --- Ejecutar la aplicación ---
 if __name__ == "__main__":
     app = Login()
     app.run()

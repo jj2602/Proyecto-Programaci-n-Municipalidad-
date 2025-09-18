@@ -1,8 +1,11 @@
 from tkinter import Tk, Label, Button, Frame, messagebox
 from tkinter import ttk
+from registro import Registro   # 🔹 importamos el registro
 
 class AdminPanel:
     def __init__(self):
+        self.archivo_usuarios = "usuarios.txt"
+
         self.ventana = Tk()
         self.ventana.title("Panel de Administración")
         self.ventana.geometry("900x600")
@@ -32,14 +35,14 @@ class AdminPanel:
         Button(self.frame_izquierda, text="Quitar Multa", font=("Arial", 14), width=20,
                command=self.quitar_multa).pack(pady=5)
 
-        Button(self.frame_izquierda, text="Eliminar ", font=("Arial", 14), width=20,
-               command=self.eliminar_inspector).pack(pady=5)
+        Button(self.frame_izquierda, text="Eliminar Usuario", font=("Arial", 14), width=20,
+               command=self.eliminar_usuario).pack(pady=5)
         
         # --- Panel derecho con Treeview (usuarios) ---
         Label(self.frame_derecha, text="Usuarios del Sistema", font=("Arial", 18, "bold"),
               bg="white", fg="black").pack(pady=10)
 
-        self.tree = ttk.Treeview(self.frame_derecha, columns=("Usuario", "Contraseña","Tipo"), show="headings", height=20)
+        self.tree = ttk.Treeview(self.frame_derecha, columns=("Usuario", "Contraseña", "Tipo"), show="headings", height=20)
         self.tree.pack(fill="both", expand=True, padx=20, pady=10)
 
         # Definir encabezados
@@ -59,10 +62,12 @@ class AdminPanel:
 
     # --- Métodos de ejemplo ---
     def agregar_inspector(self):
-        messagebox.showinfo("Agregar Inspector", "Función para agregar inspector")
+        # Al administrador le aparece la ventana de registro CON opción de tipo
+        Registro(self.archivo_usuarios, solo_usuario_comun=False)
 
     def agregar_usuario(self):
-        messagebox.showinfo("Agregar Usuario", "Función para agregar usuario")
+        # Idem, pero podría usarse para crear usuario común
+        Registro(self.archivo_usuarios, solo_usuario_comun=False)
 
     def agregar_multa(self):
         messagebox.showinfo("Agregar Multa", "Función para agregar multa")
@@ -70,21 +75,42 @@ class AdminPanel:
     def quitar_multa(self):
         messagebox.showinfo("Quitar Multa", "Función para quitar multa")
 
-    def eliminar_inspector(self):
-        messagebox.showinfo("Eliminar Inspector", "Función para eliminar inspector")
-
     def eliminar_usuario(self):
-        messagebox.showinfo("Eliminar Usuario", "Función para eliminar usuario")
+        seleccionado = self.tree.selection()
+        if not seleccionado:
+            messagebox.showwarning("Eliminar Usuario", "Debe seleccionar un usuario.")
+            return
+               
+        usuario = self.tree.item(seleccionado[0], "values")[0]
+
+        # Confirmar
+        confirm = messagebox.askyesno("Confirmar", f"¿Seguro que desea eliminar al usuario '{usuario}'?")
+        if not confirm:
+            return
+
+        # Eliminar del archivo
+        with open(self.archivo_usuarios, "r") as f:
+            lineas = f.readlines()
+        with open(self.archivo_usuarios, "w") as f:
+            for linea in lineas:
+                if not linea.startswith(usuario + ":"):
+                    f.write(linea)
+
+        # Refrescar tabla
+        self.tree.delete(*self.tree.get_children())
+        self.cargar_usuarios()
+
+        messagebox.showinfo("Éxito", f"Usuario '{usuario}' eliminado correctamente.")
 
     # --- Mostrar usuarios desde el archivo ---
     def cargar_usuarios(self):
         try:
-            with open("usuarios.txt", "r") as f:
+            with open(self.archivo_usuarios, "r") as f:
                 for linea in f:
                     linea = linea.strip()
                     if not linea:
                         continue
-                    usuario, contrasena = linea.split(":", 1)
-                    self.tree.insert("", "end", values=(usuario, contrasena))
+                    usuario, contrasena, tipo = linea.split(":", 2)
+                    self.tree.insert("", "end", values=(usuario, contrasena, tipo))
         except FileNotFoundError:
             messagebox.showwarning("Archivo no encontrado", "No existe usuarios.txt")
