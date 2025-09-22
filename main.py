@@ -2,8 +2,8 @@ from tkinter import Tk, Label, Button, Entry, Frame, Canvas, messagebox
 from PIL import Image, ImageTk
 import os
 
-from admin_panel import AdminPanel   # Panel de admin
-from registro import Registro        # Registro separado
+from admin_panel import AdminPanel  
+from registro import Registro      
 
 class Login:
     def __init__(self):
@@ -66,7 +66,7 @@ class Login:
             self.ventana.destroy()  # Cierra ventana de login
 
             if tipo == "1":  # Admin
-                AdminPanel()
+                AdminPanel(usuario)
             elif tipo == "2":
                 messagebox.showinfo("Login", "Accediste como Inspector.")
                     #Panel Inspector
@@ -82,13 +82,13 @@ class Login:
                 linea = linea.strip()
                 if not linea:
                     continue
-                u, c, t = linea.split(":", 2)
+                u, c, t = linea.split(":", 2) # Usuario / contrasena / tipo 
                 if u == usuario and c == contrasena:
                     return t
         return None
 
     def abrir_registro(self):
-        # Desde el login, solo se registran como tipo 3
+        # Desde el login permitir registrarse como tipo de usuario 3 (Usuario)
         Registro(self.archivo_usuarios, solo_usuario_comun=True)
 
     def run(self):
