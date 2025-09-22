@@ -38,7 +38,7 @@ class Login:
         self.entry_usuario.pack(pady=(0, 20))
 
         # Contraseña
-        Label(self.login_frame, text="Contrasena", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
+        Label(self.login_frame, text="Contraseña", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
         self.entry_contrasena = Entry(self.login_frame, font=("Arial", 18), width=25, show="*")
         self.entry_contrasena.pack(pady=(0, 30))
 
@@ -53,8 +53,9 @@ class Login:
         # Crear archivo si no existe
         self.archivo_usuarios = "usuarios.txt"
         if not os.path.exists(self.archivo_usuarios):
-            with open(self.archivo_usuarios, "w") as f:
-                f.write("admin:admin:1\n")  # Usuario por defecto
+            with open(self.archivo_usuarios, "w", encoding="utf-8") as f:
+                f.write("admin:admin:-:1\n")
+
 
     def login(self):
         usuario = self.entry_usuario.get()
@@ -77,15 +78,16 @@ class Login:
             messagebox.showerror("Login", "Usuario o contrasena incorrectos.")
 
     def validar_usuario(self, usuario, contrasena):
-        with open(self.archivo_usuarios, "r") as f:
+        with open(self.archivo_usuarios, "r", encoding="utf-8") as f:
             for linea in f:
                 linea = linea.strip()
                 if not linea:
                     continue
-                u, c, t = linea.split(":", 2) # Usuario / contrasena / tipo 
+                u, c, d, t = linea.split(":", 3)  # 4 campos
                 if u == usuario and c == contrasena:
                     return t
         return None
+
 
     def abrir_registro(self):
         # Desde el login permitir registrarse como tipo de usuario 3 (Usuario)
