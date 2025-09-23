@@ -32,7 +32,7 @@ class Registro:
 
         # Tipo de usuario
         if not self.solo_usuario_comun:
-            Label(self.registro_ventana, text="Tipo de Usuario:", font=("Arial", 14)).pack(pady=(0, 5))
+            Label(self.registro_ventana, text="Tipo de Usuario:", font=("Arial", 14), bg="#e6f1fd").pack(pady=(0, 5))
             self.tipo_usuario = StringVar(self.registro_ventana)
             self.tipo_usuario.set("3")  # Por defecto usuario común
             opciones = {"1": "Administrador", "2": "Inspector", "3": "Usuario"}
