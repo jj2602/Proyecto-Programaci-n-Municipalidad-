@@ -70,7 +70,7 @@ class Login:
                 AdminPanel(usuario)
             elif tipo == "2":
                 messagebox.showinfo("Login", "Accediste como Inspector.")
-                    #Panel Inspector
+                 #Panel Inspector
             elif tipo == "3":
                 messagebox.showinfo("Login", "Accediste como Usuario común.")
                   #Panel Usuario

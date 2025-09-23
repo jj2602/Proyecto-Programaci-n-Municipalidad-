@@ -1,7 +1,8 @@
-from tkinter import Tk, Label, Button, Frame, Entry, Text, filedialog, messagebox, Toplevel
+from tkinter import Tk, Label, Button, Frame, Entry, messagebox, Toplevel
 from tkinter import ttk
 from registro import Registro
-from ticket import agregar_multa
+from ticket import agregar_multa, mostrar_multas
+
 
 class AdminPanel:
     def __init__(self, usuario_actual):
@@ -83,14 +84,32 @@ class AdminPanel:
         self.cargar_usuarios()
 
     def agregar_inspector(self):
-        # Abrir ventana de registro con selección de tipo habilitada
         Registro(self.archivo_usuarios, solo_usuario_comun=False)
 
     def agregar_multa(self):
         agregar_multa(self.ventana, self.usuario_actual)
 
     def quitar_multa(self):
-        messagebox.showinfo("Quitar Multa", "Función para quitar multa")
+        # Ventana para pedir patente
+        top = Toplevel(self.ventana)
+        top.title("Buscar Multas")
+        top.geometry("300x150")
+        top.resizable(False,False)
+        top.config(bg="#e6f1fd")
+
+        Label(top, text="Ingrese Patente:", bg="white").pack(pady=10)
+        entry_patente = Entry(top, width=20)
+        entry_patente.pack(pady=5)
+
+        def abrir_multas():
+            patente = entry_patente.get().strip().upper()
+            if not patente:
+                messagebox.showwarning("Error", "Debe ingresar una patente")
+                return
+            mostrar_multas(self.ventana, patente)
+            top.destroy()
+
+        Button(top, text="Buscar", command=abrir_multas).pack(pady=10)
 
     def eliminar_usuario(self):
         seleccionado = self.tree.selection()
@@ -98,14 +117,12 @@ class AdminPanel:
             messagebox.showwarning("Eliminar Usuario", "Debe seleccionar un usuario.")
             return
 
-        # Tomamos el usuario (columna 0 del Treeview)
         usuario = self.tree.item(seleccionado[0], "values")[0]
 
         confirm = messagebox.askyesno("Confirmar", f"¿Seguro que desea eliminar al usuario '{usuario}'?")
         if not confirm:
             return
 
-        # Reescribir archivo sin la línea que empieza con "usuario:"
         try:
             with open(self.archivo_usuarios, "r") as f:
                 lineas = f.readlines()
@@ -117,25 +134,18 @@ class AdminPanel:
             messagebox.showwarning("Archivo no encontrado", "No existe usuarios.txt")
             return
 
-        # Refrescar tabla
         self.recargar()
         messagebox.showinfo("Éxito", f"Usuario '{usuario}' eliminado correctamente.")
 
     def cargar_usuarios(self):
-        """
-        Lee usuarios con el formato:
-        usuario:contraseña:documento:tipo
-        y los inserta en el Treeview.
-        """
         try:
             with open(self.archivo_usuarios, "r") as f:
                 for linea in f:
                     linea = linea.strip()
                     if not linea:
                         continue
-                    partes = linea.split(":", 3)  # máx 4
+                    partes = linea.split(":", 3)
                     if len(partes) != 4:
-                        # Línea mal formada -> la saltamos
                         continue
                     usuario, contrasena, documento, tipo = partes
                     self.tree.insert("", "end", values=(usuario, contrasena, documento, tipo))
