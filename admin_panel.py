@@ -97,7 +97,7 @@ class AdminPanel:
         top.resizable(False,False)
         top.config(bg="#e6f1fd")
 
-        Label(top, text="Ingrese Patente:", bg="white").pack(pady=10)
+        Label(top, text="Ingrese Patente:", bg="#e6f1fd").pack(pady=10)
         entry_patente = Entry(top, width=20)
         entry_patente.pack(pady=5)
 

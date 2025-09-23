@@ -82,9 +82,9 @@ def mostrar_multas(ventana_padre, patente):
     ventana.title(f"Multas de {patente}")
     ventana.geometry("600x400")
     ventana.resizable(False,False)
-    ventana.config(bg="#006172")
+    ventana.config(bg="#e6f1fd")
 
-    Label(ventana, text=f"Multas registradas de {patente}", font=("Arial", 14, "bold"), bg="white").pack(pady=10)
+    Label(ventana, text=f"Multas registradas de {patente}", font=("Arial", 14, "bold"), bg="#e6f1fd").pack(pady=10)
 
     # Treeview
     tree = ttk.Treeview(ventana, columns=("obs", "foto"), show="headings")
@@ -133,4 +133,4 @@ def mostrar_multas(ventana_padre, patente):
         tree.delete(seleccion)
         messagebox.showinfo("Éxito", "Multa eliminada")
 
-    Button(ventana, text="Eliminar Multa", bg="red", fg="white", command=eliminar_multa).pack(pady=5)
+    Button(ventana, text="ELIMINAR", font=("Calisto MT", 14, "bold"),bg="red", fg="white", command=eliminar_multa).pack(pady=5)
