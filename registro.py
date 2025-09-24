@@ -6,7 +6,7 @@ class Registro:
         self.solo_usuario_comun = solo_usuario_comun
         self.registro_ventana = Toplevel()
         self.registro_ventana.title("Registro de Usuario")
-        self.registro_ventana.geometry("400x475")
+        self.registro_ventana.geometry("400x520")
         self.registro_ventana.resizable(False, False)
         self.registro_ventana.configure(bg="#e6f1fd")
 
@@ -32,7 +32,7 @@ class Registro:
 
         # Tipo de usuario
         if not self.solo_usuario_comun:
-            Label(self.registro_ventana, text="Tipo de Usuario:", font=("Arial", 14)).pack(pady=(0, 5))
+            Label(self.registro_ventana, text="Tipo de Usuario:", font=("Arial", 14), bg="#e6f1fd").pack(pady=(0, 5))
             self.tipo_usuario = StringVar(self.registro_ventana)
             self.tipo_usuario.set("3")  # Por defecto usuario común
             opciones = {"1": "Administrador", "2": "Inspector", "3": "Usuario"}

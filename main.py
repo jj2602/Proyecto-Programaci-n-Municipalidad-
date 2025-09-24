@@ -4,6 +4,7 @@ import os
 
 from admin_panel import AdminPanel  
 from registro import Registro      
+from Panel_Usuario import UserPanel 
 
 class Login:
     def __init__(self):
@@ -17,7 +18,7 @@ class Login:
         self.canvas.pack(fill="both", expand=True)
 
         # Dibujar fondo dividido
-        self.canvas.create_rectangle(0, 0, 500, 600, fill="#0667c5", outline="#0667c5")
+        self.canvas.create_rectangle(0, 0, 500, 600, fill="#0667c5", outline="#34599C")
         self.canvas.create_rectangle(500, 0, 1000, 600, fill="#e6f1fd", outline="#e6f1fd")
 
         # Logo en la izquierda
@@ -56,6 +57,9 @@ class Login:
             with open(self.archivo_usuarios, "w", encoding="utf-8") as f:
                 f.write("admin:admin:-:1\n")
 
+        # 👇 Vincular Enter y Enter del keypad numérico con el login
+        self.ventana.bind("<Return>", lambda event: self.login())
+        self.ventana.bind("<KP_Enter>", lambda event: self.login())
 
     def login(self):
         usuario = self.entry_usuario.get()
@@ -68,14 +72,13 @@ class Login:
 
             if tipo == "1":  # Admin
                 AdminPanel(usuario)
-            elif tipo == "2":
+            elif tipo == "2":  # Inspector
                 messagebox.showinfo("Login", "Accediste como Inspector.")
-                 #Panel Inspector
-            elif tipo == "3":
-                messagebox.showinfo("Login", "Accediste como Usuario común.")
-                  #Panel Usuario
+                # Aquí podrías abrir panel de inspector
+            elif tipo == "3":  # Usuario común
+                UserPanel(usuario)  # 👈 Llamamos al panel de usuario
         else:
-            messagebox.showerror("Login", "Usuario o contrasena incorrectos.")
+            messagebox.showerror("Login", "Usuario o contraseña incorrectos.")
 
     def validar_usuario(self, usuario, contrasena):
         with open(self.archivo_usuarios, "r", encoding="utf-8") as f:
@@ -87,7 +90,6 @@ class Login:
                 if u == usuario and c == contrasena:
                     return t
         return None
-
 
     def abrir_registro(self):
         # Desde el login permitir registrarse como tipo de usuario 3 (Usuario)
