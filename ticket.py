@@ -148,18 +148,20 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
                 return
 
             obs, importe, foto = tree.item(seleccion, "values")
-            data_qr = f"{patente}|{obs}|{importe}|{foto}"
+
+            # URL de pago, incluyendo patente e importe como parámetros
+            url_pago = f"https://www.ucel.edu.ar/courses/ingenieria-en-sistemas-de-informacion/?patente={patente}&importe={importe}"
 
             # Generar QR
             qr = qrcode.QRCode(version=1, box_size=10, border=2)
-            qr.add_data(data_qr)
+            qr.add_data(url_pago)
             qr.make(fit=True)
             img_qr = qr.make_image(fill_color="black", back_color="white")
 
             # Mostrar QR
             qr_win = Toplevel(ventana)
             qr_win.title("Escanee el QR para pagar la multa")
-            qr_win.geometry("300x300")
+            qr_win.geometry("500x500")
             qr_win.resizable(False, False)
 
             img_qr_tk = ImageTk.PhotoImage(img_qr)
@@ -211,6 +213,7 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
                 f.writelines(nuevas_lineas)
 
             tree.delete(seleccion)
-            messagebox.showinfo("Éxito", "Multa eliminada")       
+            messagebox.showinfo("Éxito", "Multa eliminada")
+
         Button(ventana, text="ELIMINAR", font=("Calisto MT", 14, "bold"), bg="red", fg="white",
                command=eliminar_multa).pack(pady=5)
