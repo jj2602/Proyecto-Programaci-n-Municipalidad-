@@ -140,7 +140,7 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
         messagebox.showinfo("Info", f"No se encontraron multas para {patente}")
 
     if modo_usuario:
-        # ----------------- BOTON PAGAR -----------------
+    # ----------------- BOTON PAGAR -----------------
         def pagar_multa():
             seleccion = tree.selection()
             if not seleccion:
@@ -186,8 +186,24 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
 
             qr_win.protocol("WM_DELETE_WINDOW", cerrar_qr)
 
-        Button(ventana, text="PAGAR", font=("Calisto MT", 14, "bold"), bg="green", fg="white",
-               command=pagar_multa).pack(pady=5)
+        # --- Botón APELAR (por ahora usa la misma función que PAGAR) ---
+        def apelar_multa():
+            messagebox.showinfo("Apelar", "Función para apelar multa (en desarrollo).")
+
+        # --- Contenedor para ambos botones ---
+        botonera = Frame(ventana, bg="#e6f1fd")
+        botonera.pack(pady=8, fill="x")
+
+        Button(
+            botonera, text="PAGAR", font=("Calisto MT", 14, "bold"),
+            bg="green", fg="white", width=12, command=pagar_multa
+        ).pack(side="left", padx=(10, 5), pady=2)
+
+        Button(
+            botonera, text="APELAR", font=("Calisto MT", 14, "bold"),
+            bg="red", fg="white", width=12, command=apelar_multa
+        ).pack(side="right", padx=(5, 10), pady=2)
+
 
     else:
         # ----------------- BOTON ELIMINAR (admin) -----------------

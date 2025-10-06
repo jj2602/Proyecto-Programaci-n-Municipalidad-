@@ -1,7 +1,7 @@
 from tkinter import Tk, Label, Button, Entry, Frame, Canvas, messagebox
 from PIL import Image, ImageTk
 import os
-
+from inspector_panel import InspectorPanel
 from admin_panel import AdminPanel  
 from registro import Registro      
 from Panel_Usuario import UserPanel 
@@ -73,7 +73,7 @@ class Login:
             if tipo == "1":  # Admin
                 AdminPanel(usuario)
             elif tipo == "2":  # Inspector
-                messagebox.showinfo("Login", "Accediste como Inspector.")
+                InspectorPanel(usuario)
                 # Aquí podrías abrir panel de inspector
             elif tipo == "3":  # Usuario común
                 UserPanel(usuario)  # 👈 Llamamos al panel de usuario

@@ -31,12 +31,6 @@ class UserPanel:
         Button(self.frame_izquierda, text="Consultar Multas", font=("Arial", 14), width=20,
                command=self.consultar_multas).pack(pady=5)
 
-        Button(self.frame_izquierda, text="Pagar Multas", font=("Arial", 14), width=20,
-               command=self.pagar_multas).pack(pady=5)
-
-        Button(self.frame_izquierda, text="Hacer Apelación", font=("Arial", 14), width=20,
-               command=self.hacer_apelacion).pack(pady=5)
-
         # --- Panel derecho con Treeview ---
         Label(self.frame_derecha, text="Mis Vehículos", font=("Arial", 18, "bold"),
               bg="white", fg="black").pack(pady=10)
@@ -126,13 +120,6 @@ class UserPanel:
 
         patente = self.tree.item(seleccion, "values")[0]  # Primer valor = patente
         mostrar_multas(self.ventana, patente, modo_usuario=True)
-
-
-    def pagar_multas(self):
-        messagebox.showinfo("Pagar Multas", "Acá va la lógica para pagar multas")
-
-    def hacer_apelacion(self):
-        messagebox.showinfo("Hacer Apelación", "Acá va la lógica para hacer una apelación")
 
     def cargar_vehiculos(self):
         """Carga los vehículos del usuario actual"""

@@ -84,7 +84,7 @@ class AdminPanel:
     def auto_recargar(self):
         """Recarga automáticamente el Treeview cada 5 segundos"""
         self.recargar()
-        self.ventana.after(5000, self.auto_recargar)  
+        self.ventana.after(1000, self.auto_recargar)  
 
     def recargar(self):
         self.tree.delete(*self.tree.get_children())
