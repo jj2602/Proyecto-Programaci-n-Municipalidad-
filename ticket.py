@@ -5,6 +5,24 @@ import datetime
 import os
 import qrcode
 from PIL import Image, ImageTk
+import socket # Para obtener la IP local
+from urllib.parse import quote # Para codificar correctamente los parámetros de la URL
+
+def get_local_ip():
+    """
+    Obtiene la dirección IP local de la máquina en la red.
+    Esto es necesario para que otros dispositivos (como un celular) puedan conectarse.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # No necesita ser alcanzable, es solo para obtener la IP de la interfaz de red
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except Exception:
+        IP = '127.0.0.1' # Si falla, vuelve a localhost como fallback
+    finally:
+        s.close()
+    return IP
 
 ARCHIVO_MULTAS = "multas.txt"
 
@@ -86,16 +104,34 @@ def agregar_multa(ventana_padre, usuario_actual):
         # Vista previa del ticket
         ticket_win = Toplevel(multa)
         ticket_win.title("Ticket generado")
-        ticket_win.geometry("400x650")
+        # Ajustamos el tamaño para dar espacio a la posible imagen
+        ticket_win.geometry("400x600")
         ticket_win.resizable(False, False)
-        ticket_win.config(bg="#34599C")
+        ticket_win.config(bg="white")
 
-        Label(ticket_win, text="Vista previa del Ticket", font=("Arial", 14, "bold"), bg="white").pack(pady=10)
+        Label(ticket_win, text="Vista previa del Ticket", font=("Arial", 14, "bold"), bg="white").pack(pady=5)
 
-        txt_ticket = Text(ticket_win, wrap="word", width=50, height=18, bg="white", fg="black")
-        txt_ticket.pack(padx=10, pady=10, expand=True, fill="both")
+        txt_ticket = Text(ticket_win, wrap="word", width=50, height=15, bg="white", fg="black", relief="flat", bd=0)
+        txt_ticket.pack(padx=10, pady=5, fill="x")
         txt_ticket.insert("1.0", contenido_ticket)
         txt_ticket.config(state="disabled")  # Solo lectura
+
+        # --- INICIO: Lógica para mostrar la imagen ---
+        if foto:
+            try:
+                # Cargar la imagen con PIL
+                img_original = Image.open(foto)
+                # Redimensionar para que quepa en la ventana
+                img_original.thumbnail((380, 200)) # Mantiene la proporción, max 380x200
+                img_tk = ImageTk.PhotoImage(img_original)
+
+                # Crear una etiqueta para mostrar la imagen
+                lbl_foto = Label(ticket_win, image=img_tk, bg="white")
+                lbl_foto.image = img_tk # Guardar referencia para evitar que se borre
+                lbl_foto.pack(pady=10, padx=10)
+            except Exception as e:
+                print(f"Error al cargar la imagen para el ticket: {e}")
+        # --- FIN: Lógica para mostrar la imagen ---
 
         messagebox.showinfo("Éxito", f"Multa agregada a {patente}\nTicket generado: {ticket_nombre}")
         multa.destroy()
@@ -147,10 +183,18 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
                 messagebox.showwarning("Atención", "Seleccione una multa para pagar")
                 return
 
-            obs, importe, foto = tree.item(seleccion, "values")
+            item_values = tree.item(seleccion, "values")
+            obs, importe, foto = item_values
 
-            # URL de pago, incluyendo patente e importe como parámetros
-            url_pago = f"https://www.ucel.edu.ar/courses/ingenieria-en-sistemas-de-informacion/?patente={patente}&importe={importe}"
+            local_ip = get_local_ip()
+
+            # URL de pago apuntando a nuestra API local.
+            # Usamos quote() para asegurar que caracteres especiales en la observación no rompan la URL.
+            url_pago = (
+                f"http://{local_ip}:8000/pay?patente={quote(patente)}"
+                f"&obs={quote(obs)}&importe={quote(importe)}&foto={quote(foto)}"
+            )
+            print(f"URL de pago generada: {url_pago}") # Log para depuración
 
             # Generar QR
             qr = qrcode.QRCode(version=1, box_size=10, border=2)
@@ -169,22 +213,15 @@ def mostrar_multas(ventana_padre, patente, modo_usuario=False):
             lbl_qr.image = img_qr_tk
             lbl_qr.pack(expand=True, fill="both")
 
-            # Al cerrar QR, eliminar la multa
-            def cerrar_qr():
-                nuevas_lineas = []
-                with open(ARCHIVO_MULTAS, "r", encoding="utf-8") as f:
-                    for linea in f:
-                        if f"{patente}|{obs}|{importe}|{foto}" not in linea.strip():
-                            nuevas_lineas.append(linea)
-
-                with open(ARCHIVO_MULTAS, "w", encoding="utf-8") as f:
-                    f.writelines(nuevas_lineas)
-
+            # Al cerrar la ventana del QR, simplemente la destruimos.
+            # La eliminación de la multa ahora la gestiona el servidor FastAPI.
+            # También actualizamos la vista para que el usuario vea el cambio.
+            def al_cerrar_qr():
+                messagebox.showinfo("Información", "La multa se eliminará de la lista una vez que completes el pago en la página web.")
                 tree.delete(seleccion)
                 qr_win.destroy()
-                messagebox.showinfo("Éxito", "Multa pagada y eliminada")
 
-            qr_win.protocol("WM_DELETE_WINDOW", cerrar_qr)
+            qr_win.protocol("WM_DELETE_WINDOW", al_cerrar_qr)
 
         # --- Botón APELAR (por ahora usa la misma función que PAGAR) ---
         def apelar_multa():

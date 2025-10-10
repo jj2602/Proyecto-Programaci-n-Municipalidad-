@@ -4,7 +4,8 @@ import os
 from inspector_panel import InspectorPanel
 from admin_panel import AdminPanel  
 from registro import Registro      
-from Panel_Usuario import UserPanel 
+from Panel_Usuario import UserPanel
+from payment_api import start_api_in_thread 
 
 class Login:
     def __init__(self):
@@ -100,5 +101,6 @@ class Login:
 
 
 if __name__ == "__main__":
+    start_api_in_thread() # <-- 2. Iniciar el servidor API antes de la GUI
     app = Login()
     app.run()
