@@ -58,7 +58,6 @@ class Login:
             with open(self.archivo_usuarios, "w", encoding="utf-8") as f:
                 f.write("admin:admin:-:1\n")
 
-        # 👇 Vincular Enter y Enter del keypad numérico con el login
         self.ventana.bind("<Return>", lambda event: self.login())
         self.ventana.bind("<KP_Enter>", lambda event: self.login())
 
@@ -74,10 +73,9 @@ class Login:
             if tipo == "1":  # Admin
                 AdminPanel(usuario)
             elif tipo == "2":  # Inspector
-                InspectorPanel(usuario)
-                # Aquí podrías abrir panel de inspector
-            elif tipo == "3":  # Usuario común
-                UserPanel(usuario)  # 👈 Llamamos al panel de usuario
+                InspectorPanel(usuario)               
+            elif tipo == "3": #Usuario  
+                UserPanel(usuario)  
         else:
             messagebox.showerror("Login", "Usuario o contraseña incorrectos.")
 

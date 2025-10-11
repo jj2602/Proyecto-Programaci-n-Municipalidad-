@@ -83,7 +83,6 @@ def do_payment(
     except InvalidOperation:
         return "<h1>Error: Monto inválido.</h1>"
  
-    linea_a_buscar = f"{patente}|{obs}|{original_importe}|{foto}"
     multas_actualizadas = []
     multa_encontrada = False
     mensaje_exito = ""
@@ -94,7 +93,19 @@ def do_payment(
  
         with open(ARCHIVO_MULTAS, "r", encoding="utf-8") as f:
             for linea in f:
-                if linea.strip() == linea_a_buscar:
+                linea_limpia = linea.strip()
+                if not linea_limpia:
+                    continue
+                
+                partes = linea_limpia.split("|")
+                if len(partes) != 4:
+                    multas_actualizadas.append(linea)
+                    continue
+
+                p_file, obs_file, imp_file, foto_file = partes
+
+                # Comparación robusta, campo por campo
+                if (p_file == patente and obs_file == obs and imp_file == original_importe and foto_file == foto):
                     multa_encontrada = True
                     importe_restante = importe_original_dec - monto_pagado_dec
  
@@ -114,7 +125,7 @@ def do_payment(
                         <p>Importe restante para la patente <strong>{patente}</strong>: <strong>${importe_restante:.2f}</strong></p>
                         """
                 else:
-                    multas_actualizadas.append(linea)
+                    multas_actualizadas.append(linea) # Mantener las líneas que no coinciden
  
         if not multa_encontrada:
             return """

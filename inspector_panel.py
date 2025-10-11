@@ -1,10 +1,11 @@
 # inspector_panel.py
-from tkinter import Tk, Frame, Label, Button, messagebox
+from tkinter import Tk, Frame, Label, Button, messagebox, Toplevel, OptionMenu, StringVar, Entry
 from tkinter import ttk
 import os
+from decimal import Decimal, InvalidOperation
 
-from ticket import agregar_multa, ARCHIVO_MULTAS  # reutiliza el flujo de multas de ticket.py
-
+import datetime
+from ticket import agregar_multa, ARCHIVO_MULTAS
 APELACIONES_ARCHIVO = "apelaciones.txt"
 
 
@@ -15,7 +16,7 @@ class InspectorPanel:
         # Ventana
         self.ventana = Tk()
         self.ventana.title(f"Panel de Inspector - {usuario_actual}")
-        self.ventana.geometry("900x600")
+        self.ventana.geometry("1200x600")
         self.ventana.resizable(False, False)
         self.ventana.config(bg="#006172")
 
@@ -45,10 +46,10 @@ class InspectorPanel:
 
         self.tree = ttk.Treeview(
             cont_tabla,
-            columns=("patente", "obs", "importe", "foto", "estado"),
+            columns=("patente", "obs", "motivo", "importe", "estado"),
             show="headings",
             height=22,
-            displaycolumns=("patente", "obs", "importe", "foto", "estado")
+            displaycolumns=("patente", "obs", "motivo", "importe", "estado")
         )
         self.tree.pack(side="left", fill="both", expand=True)
 
@@ -59,16 +60,16 @@ class InspectorPanel:
         # Encabezados
         self.tree.heading("patente", text="Patente")
         self.tree.heading("obs", text="Observación")
+        self.tree.heading("motivo", text="Motivo Apelación")
         self.tree.heading("importe", text="Importe ($)")
-        self.tree.heading("foto", text="Foto")
         self.tree.heading("estado", text="Estado")
 
         # Columnas
-        self.tree.column("patente", width=120, anchor="center", stretch=True)
-        self.tree.column("obs", width=340, anchor="w", stretch=True)
-        self.tree.column("importe", width=120, anchor="center", stretch=True)
-        self.tree.column("foto", width=160, anchor="center", stretch=True)
-        self.tree.column("estado", width=100, anchor="center", stretch=True)
+        self.tree.column("patente", width=80, anchor="center")
+        self.tree.column("obs", width=200, anchor="w")
+        self.tree.column("motivo", width=250, anchor="w")
+        self.tree.column("importe", width=80, anchor="center")
+        self.tree.column("estado", width=100, anchor="center")
 
         # Botonera inferior (Aceptar / Rechazar)
         self.botonera = Frame(self.frame_derecha, bg="white")
@@ -81,13 +82,13 @@ class InspectorPanel:
         Button(self.botonera, text="RECHAZAR", font=("Arial", 13, "bold"),
                bg="#c62828", fg="white", width=12,
                command=self.rechazar_apelacion).pack(side="left", padx=8, pady=2)
+        
+        Button(self.botonera, text="PAGO VOLUNTARIO", font=("Arial", 13, "bold"),
+               bg="#ff8f00", fg="white", width=18,
+               command=self.ofrecer_pago_voluntario).pack(side="left", padx=8, pady=2)
 
         self.mostrar_apelaciones()
-        self.ventana.mainloop()
-
-        # Recarga automática cada 5 segundos
         self.auto_recargar()
-
         self.ventana.mainloop()
 
 
@@ -97,19 +98,18 @@ class InspectorPanel:
         agregar_multa(self.ventana, self.usuario_actual)
 
     def auto_recargar(self):
-        """Recarga automáticamente el Treeview cada 5 segundos"""
-        self.recargar()
-        self.ventana.after(1000, self.auto_recargar)  
+        """Recarga automáticamente el Treeview cada 3 segundos"""
+        self.mostrar_apelaciones()
+        self.ventana.after(5000, self.auto_recargar)
 
     def mostrar_apelaciones(self):
         """
         Carga apelaciones desde apelaciones.txt con formato:
-        patente|observacion|importe|foto|estado
+        patente|observacion|importe|foto|motivo|estado
         """
         self.tree.delete(*self.tree.get_children())
 
         if not os.path.exists(APELACIONES_ARCHIVO):
-            # Si no existe todavía, no es error; simplemente no hay apelaciones
             return
 
         with open(APELACIONES_ARCHIVO, "r", encoding="utf-8") as f:
@@ -118,10 +118,10 @@ class InspectorPanel:
                 if not linea:
                     continue
                 partes = linea.split("|")
-                if len(partes) != 5:
+                if len(partes) != 6:
                     continue
-                patente, obs, importe, foto, estado = partes
-                self.tree.insert("", "end", values=(patente, obs, importe, foto, estado))
+                patente, obs, importe, foto, motivo, estado = partes
+                self.tree.insert("", "end", values=(patente, obs, motivo, importe, estado), iid=linea)
 
     def aceptar_apelacion(self):
         """
@@ -133,8 +133,126 @@ class InspectorPanel:
             messagebox.showwarning("Atención", "Seleccione una apelación.")
             return
 
-        item_id = sel[0]
-        patente, obs, importe, foto, estado = self.tree.item(item_id, "values")
+        linea_original = sel[0]
+        patente, obs, importe_str, foto, motivo, estado = linea_original.split("|")
 
-        # 1) Actualizar apelaciones.txt -> estado = ACEPTADA
-        self._ac_
+        # 1. Actualizar estado en apelaciones.txt
+        self._actualizar_estado_apelacion(linea_original, "ACEPTADA")
+
+        # 2. Eliminar multa de multas.txt
+        nuevas_multas = []
+        multa_eliminada = False
+        if os.path.exists(ARCHIVO_MULTAS):
+            with open(ARCHIVO_MULTAS, "r", encoding="utf-8") as f:
+                for linea_multa in f:
+                    # Comparación exacta para no borrar la multa equivocada
+                    if linea_multa.strip() != f"{patente}|{obs}|{importe_str}|{foto}":
+                        nuevas_multas.append(linea_multa)
+                    else:
+                        multa_eliminada = True
+            
+            if multa_eliminada:
+                with open(ARCHIVO_MULTAS, "w", encoding="utf-8") as f:
+                    f.writelines(nuevas_multas)
+                messagebox.showinfo("Éxito", "Apelación ACEPTADA. La multa ha sido eliminada.")
+            else:
+                messagebox.showwarning("Atención", "La apelación fue aceptada, pero no se encontró la multa original para eliminar (posiblemente ya fue pagada o modificada).")
+        
+        self.mostrar_apelaciones()
+
+    def rechazar_apelacion(self):
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showwarning("Atención", "Seleccione una apelación.")
+            return
+        
+        linea_original = sel[0]
+        self._actualizar_estado_apelacion(linea_original, "RECHAZADA")
+        messagebox.showinfo("Éxito", "La apelación ha sido RECHAZADA.")
+        self.mostrar_apelaciones()
+
+    def ofrecer_pago_voluntario(self):
+        sel = self.tree.selection()
+        if not sel:
+            messagebox.showwarning("Atención", "Seleccione una apelación para ofrecer un descuento.")
+            return
+
+        linea_original_apelacion = sel[0]
+        patente, obs, importe_str, foto, motivo, estado = linea_original_apelacion.split("|")
+
+        # Ventana para seleccionar descuento
+        desc_win = Toplevel(self.ventana)
+        desc_win.title("Ofrecer Pago Voluntario")
+        desc_win.geometry("400x280")
+
+        Label(desc_win, text=f"Importe actual: ${importe_str}", font=("Arial", 12)).pack(pady=10)
+        Label(desc_win, text="Seleccione un descuento:", font=("Arial", 12)).pack(pady=5)
+
+        Label(desc_win, text="Fecha Límite (DD/MM/AAAA):", font=("Arial", 12)).pack(pady=(10, 0))
+        entry_fecha = Entry(desc_win, font=("Arial", 12), width=15)
+        entry_fecha.pack(pady=5)
+
+        descuento_var = StringVar(desc_win)
+        descuento_var.set("10") # Valor por defecto
+        opciones = ["10", "20", "30", "40"]
+        OptionMenu(desc_win, descuento_var, *opciones).pack(pady=5)
+
+        def aplicar_descuento():
+            try:
+                fecha_limite_str = entry_fecha.get()
+                try:
+                    # Validar formato de fecha
+                    datetime.datetime.strptime(fecha_limite_str, "%d/%m/%Y")
+                except ValueError:
+                    messagebox.showerror("Error de Formato", "La fecha límite debe estar en formato DD/MM/AAAA.")
+                    return
+
+
+                importe_original = Decimal(importe_str)
+                porcentaje_desc = Decimal(descuento_var.get())
+                descuento = importe_original * (porcentaje_desc / 100)
+                nuevo_importe = importe_original - descuento
+
+                # 1. Actualizar multas.txt con el nuevo importe
+                nuevas_multas = []
+                multa_actualizada = False
+                with open(ARCHIVO_MULTAS, "r", encoding="utf-8") as f:
+                    for linea in f:
+                        if linea.strip() == f"{patente}|{obs}|{importe_str}|{foto}":
+                            # Nuevo formato: patente|obs|importe_desc|foto|fecha_limite|importe_orig
+                            linea_descuento = f"{patente}|{obs}|{nuevo_importe:.2f}|{foto}|{fecha_limite_str}|{importe_original:.2f}\n"
+                            nuevas_multas.append(linea_descuento)
+                            multa_actualizada = True
+                        else:
+                            nuevas_multas.append(linea)
+                
+                if multa_actualizada:
+                    with open(ARCHIVO_MULTAS, "w", encoding="utf-8") as f:
+                        f.writelines(nuevas_multas)
+                    
+                    # 2. Actualizar estado en apelaciones.txt
+                    self._actualizar_estado_apelacion(linea_original_apelacion, f"PAGO VOLUNTARIO ({porcentaje_desc}% hasta {fecha_limite_str})")
+                    messagebox.showinfo("Éxito", f"Se aplicó un descuento del {porcentaje_desc}%. Nuevo importe: ${nuevo_importe:.2f}")
+                    self.mostrar_apelaciones()
+                    desc_win.destroy()
+                else:
+                    messagebox.showerror("Error", "No se encontró la multa original para aplicar el descuento.")
+
+            except InvalidOperation:
+                messagebox.showerror("Error", "El importe original de la multa no es válido.")
+
+        Button(desc_win, text="Aplicar Descuento", command=aplicar_descuento).pack(pady=15)
+
+    def _actualizar_estado_apelacion(self, linea_a_cambiar: str, nuevo_estado: str):
+        lineas_actualizadas = []
+        with open(APELACIONES_ARCHIVO, "r", encoding="utf-8") as f:
+            for linea in f:
+                if linea.strip() == linea_a_cambiar:
+                    partes = linea.strip().split("|")
+                    partes[-1] = nuevo_estado # El último elemento es el estado
+                    lineas_actualizadas.append("|".join(partes) + "\n")
+                else:
+                    lineas_actualizadas.append(linea)
+        
+        with open(APELACIONES_ARCHIVO, "w", encoding="utf-8") as f:
+            f.writelines(lineas_actualizadas)
