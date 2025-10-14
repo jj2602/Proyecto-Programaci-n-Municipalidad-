@@ -13,7 +13,7 @@ directorio_actual = os.path.dirname(os.path.abspath(__file__))
 # 2. Subir un nivel para llegar a la carpeta 'Proyecto_Programacion'
 directorio_proyecto = os.path.dirname(directorio_actual)
 # 3. Construir la ruta completa a multas.txt
-ARCHIVO_MULTAS = os.path.join(directorio_proyecto, "multas.txt")
+ARCHIVO_MULTAS = os.path.join(directorio_actual, "multas.txt")
  
 # Lock para evitar condiciones de carrera al escribir en el archivo
 file_lock = threading.Lock()
@@ -78,11 +78,28 @@ def do_payment(
     monto_a_pagar: str = Form(...)
 ):
     try:
-        importe_original_dec = Decimal(original_importe)
-        monto_pagado_dec = Decimal(monto_a_pagar)
+       
+        # Eliminar multa del archivo
+        nuevas_lineas = []
+        with open(ARCHIVO_MULTAS, "r", encoding="utf-8") as f:
+            for linea in f:
+                datos = linea.strip().split("|")
+                if len(datos) < 4:
+                    continue
+                p, o, i, fot = datos[:4]
+                # Comparación flexible sin depender de formato exacto
+                if not (p == patente and o == obs and i == original_importe and fot == foto):
+                    nuevas_lineas.append(linea)
+        with open(ARCHIVO_MULTAS, "w", encoding="utf-8") as f:
+            f.writelines(nuevas_lineas)
+
     except InvalidOperation:
         return "<h1>Error: Monto inválido.</h1>"
- 
+    return """<html>
+La multa fue pagada
+</html>
+
+"""
     multas_actualizadas = []
     multa_encontrada = False
     mensaje_exito = ""
