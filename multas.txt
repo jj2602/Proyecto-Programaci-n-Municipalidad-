@@ -1,0 +1,4 @@
+OJJ081|ASDA|2400.00|Sin foto|15/10/2025|4000.00
+OJJ|SSS|6000|Sin foto
+OJJ081|prueba multas|3000|C:/Users/Facundo/Desktop/Proyecto-Programaci-n-Municipalidad2/autito.png
+OJJ081|Prua|4000|C:/Users/Facundo/Desktop/Proyecto-Programaci-n-Municipalidad2/autito.png

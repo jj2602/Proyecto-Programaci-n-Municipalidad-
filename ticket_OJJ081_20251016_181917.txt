@@ -1,0 +1,12 @@
+=================================
+           TICKET DE MULTA       
+=================================
+Patente: OJJ081
+Inspector: admin
+Fecha: 16/10/2025 18:19:17
+Observación:
+prueba multas
+Importe: $3000
+Foto: C:/Users/Facundo/Desktop/Proyecto-Programaci-n-Municipalidad2/autito.png
+=================================
+   Sistema de Control Vehicular   
