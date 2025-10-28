@@ -1,8 +1,10 @@
 import json
 from tkinter import Tk, Label, Button, Frame, Entry, messagebox, Toplevel, StringVar, OptionMenu
 from tkinter import ttk
+import datetime
 from registro import Registro
 from ticket import agregar_multa, mostrar_multas
+from decimal import Decimal, InvalidOperation
 
 
 class AdminPanel:
@@ -72,7 +74,8 @@ class AdminPanel:
             "2": self.agregar_multa,
             "3": self.quitar_multa,
             "4": self.eliminar_usuario,
-            "5": self.editar_usuario
+            "5": self.editar_usuario,
+            "6": self.modificar_precio_combustible
         }
 
         # 🔹 2. Leer archivo JSON
@@ -107,6 +110,63 @@ class AdminPanel:
     def funcion_placeholder(self):
         """Función para los botones nuevos que no tienen una acción asignada."""
         messagebox.showinfo("Función no implementada", "Este botón no tiene una acción asignada aún.")
+
+    def modificar_precio_combustible(self):
+        """Abre una ventana para que el admin modifique el precio del combustible."""
+        
+        # Leer precio actual
+        try:
+            with open("config.json", "r", encoding="utf-8") as f:
+                config = json.load(f)
+            precio_actual = Decimal(config.get("precio_litro_gasoil", "0"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            precio_actual = Decimal("0")
+            messagebox.showerror("Error", "No se pudo leer el archivo de configuración 'config.json'.")
+
+        # Crear ventana
+        top = Toplevel(self.ventana)
+        top.title("Modificar Precio del Combustible")
+        top.geometry("400x250")
+        top.config(bg="#e6f1fd")
+
+        Label(top, text="Precio del Litro de Gasoil", font=("Arial", 14, "bold"), bg="#e6f1fd").pack(pady=10)
+        Label(top, text=f"Precio Actual: ${precio_actual:.2f}", font=("Arial", 12), bg="#e6f1fd").pack(pady=5)
+
+        Label(top, text="Nuevo Precio:", font=("Arial", 12), bg="#e6f1fd").pack(pady=(10, 0))
+        entry_precio = Entry(top, font=("Arial", 12), width=15)
+        entry_precio.pack(pady=5)
+
+        def guardar_precio():
+            try:
+                nuevo_precio_str = entry_precio.get().replace(",", ".").strip()
+                nuevo_precio = Decimal(nuevo_precio_str)
+                if nuevo_precio <= 0:
+                    messagebox.showwarning("Error", "El precio debe ser un número positivo.", parent=top)
+                    return
+
+                # Guardar en config.json
+                with open("config.json", "w", encoding="utf-8") as f:
+                    json.dump({"precio_litro_gasoil": float(nuevo_precio)}, f, indent=4)
+
+                # Registrar en auditoría
+                fecha_hora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                log_entry = (
+                    f"[{fecha_hora}] Usuario: {self.usuario_actual} | "
+                    f"Cambio de precio: ${precio_actual:.2f} -> ${nuevo_precio:.2f}\n"
+                )
+                with open("auditoria_combustible.txt", "a", encoding="utf-8") as f_audit:
+                    f_audit.write(log_entry)
+
+                messagebox.showinfo("Éxito", f"Precio del combustible actualizado a ${nuevo_precio:.2f}", parent=top)
+                top.destroy()
+
+            except InvalidOperation:
+                messagebox.showwarning("Error", "Por favor, ingrese un valor numérico válido.", parent=top)
+            except Exception as e:
+                messagebox.showerror("Error Inesperado", f"Ocurrió un error: {e}", parent=top)
+
+        Button(top, text="Guardar Cambios", command=guardar_precio, font=("Arial", 12, "bold")).pack(pady=20)
+
 
     # ---------------- MÉTODOS EXISTENTES ----------------
     def auto_recargar(self):

@@ -1,1 +1,2 @@
-OJJ081|ASDA|4000|Sin foto|No sea malo|PAGO VOLUNTARIO (40% hasta 15/10/2025)
+OJJ081|ASDA|4000|Sin foto|No sea malo|RECHAZADA
+OJJ081|Cruzar semáforo en rojo|166665|Sin foto|Tu mama cruzo el semafo en rojo|RECHAZADA

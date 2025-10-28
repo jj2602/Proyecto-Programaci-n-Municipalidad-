@@ -136,6 +136,11 @@ class InspectorPanel:
         linea_original = sel[0]
         patente, obs, importe_str, foto, motivo, estado = linea_original.split("|")
 
+        # --- VALIDACIÓN: No cambiar una decisión ya tomada ---
+        if estado != "PENDIENTE":
+            messagebox.showwarning("Acción no permitida", f"Esta apelación ya fue procesada (Estado: {estado}). No se puede cambiar la decisión.")
+            return
+
         # 1. Actualizar estado en apelaciones.txt
         self._actualizar_estado_apelacion(linea_original, "ACEPTADA")
 
@@ -167,6 +172,13 @@ class InspectorPanel:
             return
         
         linea_original = sel[0]
+        patente, obs, importe_str, foto, motivo, estado = linea_original.split("|")
+
+        # --- VALIDACIÓN: No cambiar una decisión ya tomada ---
+        if estado != "PENDIENTE":
+            messagebox.showwarning("Acción no permitida", f"Esta apelación ya fue procesada (Estado: {estado}). No se puede cambiar la decisión.")
+            return
+
         self._actualizar_estado_apelacion(linea_original, "RECHAZADA")
         messagebox.showinfo("Éxito", "La apelación ha sido RECHAZADA.")
         self.mostrar_apelaciones()
@@ -179,6 +191,11 @@ class InspectorPanel:
 
         linea_original_apelacion = sel[0]
         patente, obs, importe_str, foto, motivo, estado = linea_original_apelacion.split("|")
+
+        # --- VALIDACIÓN: No cambiar una decisión ya tomada ---
+        if estado != "PENDIENTE":
+            messagebox.showwarning("Acción no permitida", f"Esta apelación ya fue procesada (Estado: {estado}). No se puede cambiar la decisión.")
+            return
 
         # Ventana para seleccionar descuento
         desc_win = Toplevel(self.ventana)

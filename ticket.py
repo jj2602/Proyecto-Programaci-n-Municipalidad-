@@ -5,6 +5,8 @@ import os
 import qrcode
 from PIL import Image, ImageTk
 import socket
+import json
+from decimal import Decimal, InvalidOperation
 from urllib.parse import quote
 
 
@@ -50,13 +52,35 @@ def agregar_multa(ventana_padre, usuario_actual):
     entry_patente = Entry(form_frame, width=25)
     entry_patente.grid(row=0, column=1, pady=5)
 
-    Label(form_frame, text="Observación:", bg="white").grid(row=1, column=0, sticky="nw", pady=5)
-    txt_obs = Text(form_frame, width=30, height=5)
-    txt_obs.grid(row=1, column=1, pady=5)
+    # --- Cargar infracciones desde JSON ---
+    infracciones_map = {}
+    try:
+        with open("infracciones.json", "r", encoding="utf-8") as f:
+            infracciones_data = json.load(f)
+        for infra in infracciones_data:
+            infracciones_map[infra["descripcion"]] = infra["litros"]
+    except (FileNotFoundError, json.JSONDecodeError):
+        messagebox.showerror("Error de Configuración", "No se pudo cargar 'infracciones.json'.")
+        multa.destroy()
+        return
 
-    Label(form_frame, text="Importe ($):", bg="white").grid(row=2, column=0, sticky="w", pady=5)
-    entry_importe = Entry(form_frame, width=25)
-    entry_importe.grid(row=2, column=1, pady=5)
+    Label(form_frame, text="Tipo de Infracción:", bg="white").grid(row=1, column=0, sticky="w", pady=5)
+    combo_infraccion = ttk.Combobox(form_frame, values=list(infracciones_map.keys()), width=30, state="readonly")
+    combo_infraccion.grid(row=1, column=1, pady=5)
+    combo_infraccion.set("Seleccione una infracción")
+
+    # --- Etiqueta para mostrar litros ---
+    Label(form_frame, text="Litros equivalentes:", bg="white").grid(row=2, column=0, sticky="w", pady=5)
+    lbl_litros = Label(form_frame, text="N/A", bg="white", font=("Arial", 10, "bold"))
+    lbl_litros.grid(row=2, column=1, sticky="w", pady=5)
+
+    def actualizar_litros(event):
+        """Se ejecuta cuando se selecciona una infracción para mostrar los litros."""
+        seleccion = combo_infraccion.get()
+        litros = infracciones_map.get(seleccion, "N/A")
+        lbl_litros.config(text=f"{litros} litros")
+
+    combo_infraccion.bind("<<ComboboxSelected>>", actualizar_litros)
 
     foto_path = {"ruta": None}
 
@@ -69,17 +93,31 @@ def agregar_multa(ventana_padre, usuario_actual):
             foto_path["ruta"] = ruta
             messagebox.showinfo("Foto seleccionada", f"Se agregó la foto:\n{os.path.basename(ruta)}")
 
-    Button(form_frame, text="Agregar Foto", command=seleccionar_foto).grid(row=3, column=1, pady=10, sticky="w")
+    Button(form_frame, text="Agregar Foto", command=seleccionar_foto).grid(row=4, column=1, pady=10, sticky="w")
 
     # Guardar multa
     def guardar_multa():
         patente = entry_patente.get().strip().upper()
-        observacion = txt_obs.get("1.0", "end").strip()
-        importe = entry_importe.get().strip()
+        observacion = combo_infraccion.get()
         foto = foto_path["ruta"] or "Sin foto"
 
-        if not (patente and observacion and importe):
-            messagebox.showwarning("Error", "Complete todos los campos")
+        if not patente or observacion == "Seleccione una infracción":
+            messagebox.showwarning("Error", "Debe completar la patente y seleccionar una infracción.")
+            return
+
+        try:
+            # Leer precio del combustible y calcular importe
+            with open("config.json", "r", encoding="utf-8") as f:
+                config = json.load(f)
+            precio_litro = Decimal(config.get("precio_litro_gasoil", "0"))
+            litros = Decimal(infracciones_map.get(observacion, 0))
+            
+            if litros <= 0:
+                messagebox.showwarning("Error", "La infracción seleccionada no tiene litros válidos.")
+                return
+            importe = precio_litro * litros
+        except (FileNotFoundError, json.JSONDecodeError, InvalidOperation) as e:
+            messagebox.showerror("Error", "No se pudo calcular el importe. Verifique la configuración del precio del combustible y el valor de los litros.")
             return
 
         # Guardar multa
@@ -96,8 +134,8 @@ def agregar_multa(ventana_padre, usuario_actual):
             f"Patente: {patente}\n"
             f"Inspector: {usuario_actual}\n"
             f"Fecha: {fecha}\n"
-            f"Observación:\n{observacion}\n"
-            f"Importe: ${importe}\n"
+            f"Infracción: {observacion}\n"
+            f"Importe: ${importe:.2f}\n"
             f"Foto: {foto}\n"
             "===================================================\n"
             "   Sistema de Control Vehicular   \n"

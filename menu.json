@@ -1,8 +1,8 @@
 [
-  { "id": "1", "texto": "prueba" },
+  { "id": "1", "texto": "Agregar Usuario" },
   { "id": "2", "texto": "Agregar Multa" },
   { "id": "3", "texto": "Buscar Multas" },
   { "id": "4", "texto": "Eliminar Usuario" },
   { "id": "5", "texto": "Editar Usuario" },
-  { "id": "6", "texto": "salir" }
+  { "id": "6", "texto": "Precio Gasoil" }
 ]

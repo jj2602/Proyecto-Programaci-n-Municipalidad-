@@ -1,0 +1,7 @@
+[
+    { "descripcion": "Exceso de velocidad", "litros": 10 },
+    { "descripcion": "Mal estacionamiento", "litros": 4 },
+    { "descripcion": "Cruzar semáforo en rojo", "litros": 15 },
+    { "descripcion": "No usar cinturón de seguridad", "litros": 5 },
+    { "descripcion": "Uso de celular al conducir", "litros": 8 }
+]
