@@ -1,6 +1,1 @@
-[27/10/2025 21:49:41] Usuario: admin | Cambio de precio: $1000.00 -> $3500.00
-[27/10/2025 21:51:50] Usuario: admin | Cambio de precio: $3500.00 -> $11111.00
-[27/10/2025 22:01:50] Usuario: admin | Cambio de precio: $11111.00 -> $2300.00
-[27/10/2025 22:11:06] Usuario: admin | Cambio de precio: $2300.00 -> $1111.00
-[27/10/2025 22:15:08] Usuario: Facundo1 | Cambio de precio: $1111.00 -> $321.00
-[27/10/2025 22:18:13] Usuario: admin | Cambio de precio: $321.00 -> $10000.00
+[04/11/2025 01:15:51] Usuario: admin | Cambio de precio: $10000.00 -> $110000.00

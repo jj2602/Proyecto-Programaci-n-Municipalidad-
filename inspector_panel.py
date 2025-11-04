@@ -1,5 +1,6 @@
 # inspector_panel.py
 from tkinter import Tk, Frame, Label, Button, messagebox, Toplevel, OptionMenu, StringVar, Entry
+from PIL import Image, ImageTk
 from tkinter import ttk
 import os
 from decimal import Decimal, InvalidOperation
@@ -18,10 +19,10 @@ class InspectorPanel:
         self.ventana.title(f"Panel de Inspector - {usuario_actual}")
         self.ventana.geometry("1200x600")
         self.ventana.resizable(False, False)
-        self.ventana.config(bg="#006172")
+        self.ventana.config(bg="#0a4077")
 
         # Layout principal
-        self.frame_izquierda = Frame(self.ventana, bg="#004d57", width=250)
+        self.frame_izquierda = Frame(self.ventana, bg="#0a4077", width=250)
         self.frame_izquierda.pack(side="left", fill="y")
 
         self.frame_derecha = Frame(self.ventana, bg="white")
@@ -29,13 +30,23 @@ class InspectorPanel:
 
         # Lado izquierdo (acciones)
         Label(self.frame_izquierda, text="Panel de Inspector", font=("Arial", 18, "bold"),
-              bg="#004d57", fg="white").pack(pady=20)
+              bg="#0a4077", fg="white").pack(pady=20)
 
         Button(self.frame_izquierda, text="Agregar Multa", font=("Arial", 14), width=20,
                command=self.btn_agregar_multa).pack(pady=6)
 
         Button(self.frame_izquierda, text="Revisar Apelaciones", font=("Arial", 14), width=20,
                command=self.mostrar_apelaciones).pack(pady=6)
+
+        # --- Logo en la parte inferior izquierda ---
+        try:
+            self.logo_img = Image.open("muni.png").resize((180, 63)) # Redimensionamos para que quepa
+            self.logo_photo = ImageTk.PhotoImage(self.logo_img)
+            logo_label = Label(self.frame_izquierda, image=self.logo_photo, bg="#0a4077")
+            # Usamos side="bottom" para anclarlo abajo
+            logo_label.pack(side="bottom", pady=20)
+        except FileNotFoundError:
+            print("Advertencia: No se encontró la imagen 'muni.png'.")
 
         # Lado derecho (tabla / contenido)
         Label(self.frame_derecha, text="Apelaciones", font=("Arial", 18, "bold"),

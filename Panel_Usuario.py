@@ -1,5 +1,6 @@
 from tkinter import Tk, Label, Button, Frame, messagebox, Toplevel, Entry
 from tkinter import ttk
+from PIL import Image, ImageTk
 import os
 from ticket import mostrar_multas  
 
@@ -11,7 +12,7 @@ class UserPanel:
 
         self.ventana = Tk()
         self.ventana.title(f"Panel de Usuario - {usuario_actual}")
-        self.ventana.geometry("900x600")
+        self.ventana.geometry("1000x600")
         self.ventana.resizable(False, False)
         self.ventana.config(bg="#0a4077")
 
@@ -31,6 +32,16 @@ class UserPanel:
 
         Button(self.frame_izquierda, text="Consultar Multas", font=("Arial", 14), width=20,
                command=self.consultar_multas).pack(pady=5)
+
+        # --- Logo en la parte inferior izquierda ---
+        try:
+            self.logo_img = Image.open("muni.png").resize((180, 63)) # Redimensionamos para que quepa
+            self.logo_photo = ImageTk.PhotoImage(self.logo_img)
+            logo_label = Label(self.frame_izquierda, image=self.logo_photo, bg="#0a4077")
+            # Usamos side="bottom" para anclarlo abajo
+            logo_label.pack(side="bottom", pady=20)
+        except FileNotFoundError:
+            print("Advertencia: No se encontró la imagen 'muni.png'.")
 
         # --- Panel derecho con Treeview ---
         Label(self.frame_derecha, text="Mis Vehículos", font=("Arial", 18, "bold"),

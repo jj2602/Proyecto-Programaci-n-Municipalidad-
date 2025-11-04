@@ -1,5 +1,6 @@
 import json
 from tkinter import Tk, Label, Button, Frame, Entry, messagebox, Toplevel, StringVar, OptionMenu
+from PIL import Image, ImageTk
 from tkinter import ttk
 import datetime
 from registro import Registro
@@ -30,6 +31,16 @@ class AdminPanel:
               bg="#0a4077", fg="white").pack(pady=20)
 
         self.crear_menu_dinamico()
+
+        # --- Logo en la parte inferior izquierda ---
+        try:
+            self.logo_img = Image.open("muni.png").resize((180, 63)) # Redimensionamos para que quepa
+            self.logo_photo = ImageTk.PhotoImage(self.logo_img)
+            logo_label = Label(self.frame_izquierda, image=self.logo_photo, bg="#0a4077")
+            # Usamos side="bottom" para anclarlo abajo
+            logo_label.pack(side="bottom", pady=20)
+        except FileNotFoundError:
+            print("Advertencia: No se encontró la imagen 'muni.png'.")
 
         # --- Panel derecho con tabla de usuarios ---
         Label(self.frame_derecha, text="Usuarios del Sistema", font=("Arial", 18, "bold"),

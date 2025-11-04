@@ -29,18 +29,24 @@ class Login:
 
         # Frame de login derecha
         self.login_frame = Frame(self.canvas, bg="#e6f1fd")
-        self.login_frame.place(x=600, y=150)
+        self.login_frame.place(x=600, y=100)
+
+        # Icono de usuario
+        self.user_icon_img = Image.open("usuario_login.png")
+        self.user_icon_img.thumbnail((100, 110)) # Usamos thumbnail para mantener la proporción
+        self.user_icon_photo = ImageTk.PhotoImage(self.user_icon_img)
+        Label(self.login_frame, image=self.user_icon_photo, bg="#e6f1fd").pack(pady=(0, 10))
 
         # Título
-        Label(self.login_frame, text="LOGIN", font=("Calisto MT", 36, "bold"), bg="#e6f1fd").pack(pady=(0, 30))
+        Label(self.login_frame, text="LOGIN", font=("Calisto MT", 30, "bold"), bg="#e6f1fd").pack(pady=(0, 20))
 
         # Usuario
-        Label(self.login_frame, text="Usuario", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
+        Label(self.login_frame, text="👤Usuario", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
         self.entry_usuario = Entry(self.login_frame, font=("Arial", 18), width=25)
         self.entry_usuario.pack(pady=(0, 20))
 
         # Contraseña
-        Label(self.login_frame, text="Contraseña", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
+        Label(self.login_frame, text="🔒Contraseña", font=("Arial", 18), bg="#e6f1fd").pack(anchor="w")
         self.entry_contrasena = Entry(self.login_frame, font=("Arial", 18), width=25, show="*")
         self.entry_contrasena.pack(pady=(0, 30))
 
