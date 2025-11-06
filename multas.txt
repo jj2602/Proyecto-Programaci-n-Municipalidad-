@@ -1,2 +1,3 @@
 OJJ|SSS|6000|Sin foto
 OOJ081|No usar cinturón de seguridad|55555|Sin foto
+OJJ081|No usar cinturón de seguridad|615|Sin foto

@@ -2,7 +2,7 @@ from tkinter import Tk, Label, Button, Frame, messagebox, Toplevel, Entry
 from tkinter import ttk
 from PIL import Image, ImageTk
 import os
-from ticket import mostrar_multas  
+from ticket import mostrar_multas
 
 
 class UserPanel:
@@ -27,11 +27,7 @@ class UserPanel:
         Label(self.frame_izquierda, text="Panel de Usuario", font=("Arial", 18, "bold"),
               bg="#0a4077", fg="white").pack(pady=20)
 
-        Button(self.frame_izquierda, text="Cargar Vehículo", font=("Arial", 14), width=20,
-               command=self.cargar_vehiculo).pack(pady=5)
-
-        Button(self.frame_izquierda, text="Consultar Multas", font=("Arial", 14), width=20,
-               command=self.consultar_multas).pack(pady=5)
+        self.crear_menu_dinamico()
 
         # --- Logo en la parte inferior izquierda ---
         try:
@@ -81,6 +77,43 @@ class UserPanel:
         self.ventana.mainloop()
 
     # ---------------- MÉTODOS ----------------
+    def crear_menu_dinamico(self):
+        """Lee el archivo menu_usuario.json y crea los botones usando IDs."""
+        import json # Importación local para evitar conflictos si no se usa
+
+        # 1. Mapeo de ID -> función
+        comandos = {
+            "1": self.cargar_vehiculo,
+            "2": self.consultar_multas,
+        }
+
+        # 2. Leer archivo JSON
+        try:
+            with open("menu_usuario.json", "r", encoding="utf-8") as f:
+                opciones_menu = json.load(f)
+        except FileNotFoundError:
+            messagebox.showerror("Error de Configuración", "No se encontró el archivo 'menu_usuario.json'.")
+            return
+        except json.JSONDecodeError:
+            messagebox.showerror("Error de Configuración", "El archivo 'menu_usuario.json' tiene un formato inválido.")
+            return
+
+        # 3. Crear los botones dinámicamente
+        for opcion in opciones_menu:
+            id_boton = str(opcion.get("id", ""))
+            texto_boton = opcion.get("texto", "Sin nombre")
+
+            if not id_boton:
+                continue
+
+            comando = comandos.get(id_boton, self.funcion_placeholder)
+
+            Button(self.frame_izquierda, text=texto_boton, font=("Arial", 14), width=20, command=comando).pack(pady=5)
+
+    def funcion_placeholder(self):
+        """Función para los botones nuevos que no tienen una acción asignada."""
+        messagebox.showinfo("Función no implementada", "Este botón no tiene una acción asignada aún.")
+
     def cargar_vehiculo(self):
         """Formulario emergente para agregar un vehículo"""
         top = Toplevel(self.ventana)

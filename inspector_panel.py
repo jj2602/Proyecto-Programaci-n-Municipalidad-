@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 import os
 from decimal import Decimal, InvalidOperation
-
+import json
 import datetime
 from ticket import agregar_multa, ARCHIVO_MULTAS
 APELACIONES_ARCHIVO = "apelaciones.txt"
@@ -32,11 +32,7 @@ class InspectorPanel:
         Label(self.frame_izquierda, text="Panel de Inspector", font=("Arial", 18, "bold"),
               bg="#0a4077", fg="white").pack(pady=20)
 
-        Button(self.frame_izquierda, text="Agregar Multa", font=("Arial", 14), width=20,
-               command=self.btn_agregar_multa).pack(pady=6)
-
-        Button(self.frame_izquierda, text="Revisar Apelaciones", font=("Arial", 14), width=20,
-               command=self.mostrar_apelaciones).pack(pady=6)
+        self.crear_menu_dinamico()
 
         # --- Logo en la parte inferior izquierda ---
         try:
@@ -102,6 +98,43 @@ class InspectorPanel:
         self.auto_recargar()
         self.ventana.mainloop()
 
+    def crear_menu_dinamico(self):
+        """Lee el archivo menu_inspector.json y crea los botones usando IDs."""
+
+        # 1. Mapeo de ID -> función
+        comandos = {
+            "1": self.btn_agregar_multa,
+            "2": self.mostrar_apelaciones,
+        }
+
+        # 2. Leer archivo JSON
+        try:
+            with open("menu_inspector.json", "r", encoding="utf-8") as f:
+                opciones_menu = json.load(f)
+        except FileNotFoundError:
+            messagebox.showerror("Error de Configuración", "No se encontró el archivo 'menu_inspector.json'.")
+            return
+        except json.JSONDecodeError:
+            messagebox.showerror("Error de Configuración", "El archivo 'menu_inspector.json' tiene un formato inválido.")
+            return
+
+        # 3. Crear los botones dinámicamente
+        for opcion in opciones_menu:
+            id_boton = str(opcion.get("id", ""))
+            texto_boton = opcion.get("texto", "Sin nombre")
+
+            if not id_boton:
+                continue  # Ignorar si no hay ID
+
+            comando = comandos.get(id_boton, self.funcion_placeholder)
+
+            Button(
+                self.frame_izquierda,
+                text=texto_boton,
+                font=("Arial", 14),
+                width=20,
+                command=comando
+            ).pack(pady=6)
 
     # ---------- Acciones ----------
     def btn_agregar_multa(self):
@@ -112,6 +145,10 @@ class InspectorPanel:
         """Recarga automáticamente el Treeview cada 3 segundos"""
         self.mostrar_apelaciones()
         self.ventana.after(5000, self.auto_recargar)
+
+    def funcion_placeholder(self):
+        """Función para los botones nuevos que no tienen una acción asignada."""
+        messagebox.showinfo("Función no implementada", "Este botón no tiene una acción asignada aún.")
 
     def mostrar_apelaciones(self):
         """

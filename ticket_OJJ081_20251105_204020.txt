@@ -1,0 +1,11 @@
+===================================================
+           TICKET DE MULTA       
+===================================================
+Patente: OJJ081
+Inspector: admin
+Fecha: 05/11/2025 20:40:20
+Infracción: Mal estacionamiento
+Importe: $440000.00
+Foto: C:/Users/Facun/Desktop/Proyecto-Prog/autito.png
+===================================================
+   Sistema de Control Vehicular   

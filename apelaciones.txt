@@ -1,2 +1,3 @@
 OJJ081|ASDA|4000|Sin foto|No sea malo|RECHAZADA
 OJJ081|Cruzar semáforo en rojo|166665|Sin foto|Tu mama cruzo el semafo en rojo|RECHAZADA
+OJJ081|Cruzar semáforo en rojo|1845|Sin foto|Siento que pase el semaforo estando en amarillo|PAGO VOLUNTARIO (40% hasta 06/11/2025)
